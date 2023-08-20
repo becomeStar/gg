@@ -64,5 +64,45 @@ message Product {
 
 ### 컴파일 명령어
 ```sh
-protoc mypackage.proto --python_out=.
+protoc -I=프로토콜_정의_파일_디렉토리 --java_out=생성될_자바_코드_디렉토리 your_proto_file.proto
 ```
+- protoc: Protocol Buffers 컴파일러 실행 명령어.
+- --java_out: Java 코드를 생성하기 위한 옵션.
+- out_directory: 생성된 코드를 저장할 디렉토리.
+- input.proto: 컴파일할 프로토콜 버퍼 파일 이름.
+
+
+
+### Protocol Buffers 예제 파일
+
+```protobuf
+syntax = "proto3";
+package tutorial;
+
+// 주소록 정보를 저장하는 메시지 정의
+message Person {
+  string name = 1;
+  int32 id = 2;
+  string email = 3;
+
+  // PhoneNumber 메시지 타입의 반복 필드
+  repeated PhoneNumber phones = 4;
+}
+
+// 전화번호를 저장하는 메시지 정의
+message PhoneNumber {
+  string number = 1;
+  PhoneType type = 2;  // 열거형 타입 사용
+
+  // PhoneType 열거형 정의
+  enum PhoneType {
+    MOBILE = 0;
+    HOME = 1;
+    WORK = 2;
+  }
+}
+
+// 주소록 정보를 저장하는 메시지 타입의 반복 필드
+message AddressBook {
+  repeated Person people = 1;
+}
