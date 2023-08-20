@@ -22,18 +22,18 @@ Protocol Buffers(protobuf)는 Google에서 개발한 데이터 직렬화 및 언
 ## Protocol Buffers 기본 문법
 
 ### 패키지 정의
-\```protobuf
+```protobuf
 syntax = "proto3";
 package mypackage;
-\```
+```
 
 ### 메시지 정의
-\```protobuf
+```protobuf
 message Person {
   string name = 1;
   int32 age = 2;
 }
-\```
+```
 
 ### 필드 유형
 - `int32`, `int64`, `uint32`, `uint64`: 정수형
@@ -44,25 +44,25 @@ message Person {
 - `repeated`: 배열 혹은 리스트
 
 ### 열거형 정의
-\```protobuf
+```protobuf
 enum Category {
   ELECTRONICS = 0;
   CLOTHING = 1;
   FOOD = 2;
 }
-\```
+```
 
 ### 반복 필드
-\```protobuf
+```protobuf
 message Product {
   string name = 1;
   float price = 2;
   repeated string tags = 3;
   Category category = 4;
 }
-\```
+```
 
 ### 컴파일 명령어
-\```sh
+```sh
 protoc mypackage.proto --python_out=.
-\```
+```
