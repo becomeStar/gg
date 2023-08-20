@@ -19,14 +19,50 @@ Protocol Buffers(protobuf)는 Google에서 개발한 데이터 직렬화 및 언
 - **속도**: JSON보다 직렬화 및 역직렬화 과정에서 빠르며, 데이터 처리 속도가 향상됩니다.
 - **스키마**: protobuf는 스키마를 사용하여 데이터 구조를 정의하므로 데이터의 일관성과 버전 관리가 용이합니다.
 
-## 4. Protocol Buffers Package 및 Message
-### Package
-Package는 메시지를 조직화하기 위해 사용됩니다. 관련된 메시지를 하나의 그룹으로 묶어둡니다.
-```protobuf
+## Protocol Buffers 기본 문법
+
+### 패키지 정의
+\```protobuf
 syntax = "proto3";
 package mypackage;
+\```
 
+### 메시지 정의
+\```protobuf
 message Person {
   string name = 1;
   int32 age = 2;
 }
+\```
+
+### 필드 유형
+- `int32`, `int64`, `uint32`, `uint64`: 정수형
+- `float`, `double`: 부동 소수점 형식
+- `string`: 문자열
+- `bool`: 불리언 값
+- `enum`: 열거형
+- `repeated`: 배열 혹은 리스트
+
+### 열거형 정의
+\```protobuf
+enum Category {
+  ELECTRONICS = 0;
+  CLOTHING = 1;
+  FOOD = 2;
+}
+\```
+
+### 반복 필드
+\```protobuf
+message Product {
+  string name = 1;
+  float price = 2;
+  repeated string tags = 3;
+  Category category = 4;
+}
+\```
+
+### 컴파일 명령어
+\```sh
+protoc mypackage.proto --python_out=.
+\```
