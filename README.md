@@ -128,10 +128,14 @@ message AddressBook {
   repeated Person people = 1;
 }
 
+```
+
 ### 컴파일 명령어
+
 ```sh
 protoc -I=프로토콜_정의_파일_디렉토리 --java_out=생성될_자바_코드_디렉토리 your_proto_file.proto
 ```
+
 - protoc: Protocol Buffers 컴파일러 실행 명령어.
 - --java_out: Java 코드를 생성하기 위한 옵션.
 - out_directory: 생성된 코드를 저장할 디렉토리.
