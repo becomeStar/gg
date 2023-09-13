@@ -95,3 +95,4 @@ public class MyServerInterceptor implements ServerInterceptor {
   - onHalfClose(): 클라이언트가 데이터 스트림의 절반을 닫을 때 호출됩니다. 이것은 클라이언트가 모든 메시지를 보낸 후 스트림을 닫을 때 발생하며, 서버에서 응답을 반환하기 시작할 수 있습니다.
   -  onComplete(): 호출이 완료될 때 호출됩니다. 서버에서 클라이언트로의 호출이 완료되면 이 메서드를 사용하여 완료 상태를 처리할 수 있습니다.
   - onCancel(): 호출이 취소되었을 때 호출됩니다. 서버에서 클라이언트 요청이 취소될 때 실행됩니다.
+- 인터셉터의 각 이벤트들의 호출 순서를 설명한 블로그 : https://engineering.kabu.com/entry/2021/03/31/162401  
