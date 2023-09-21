@@ -1,0 +1,98 @@
+## gRPC Routing
+
+- gRPC 서비스에서는 각 메서드에 대한 엔드포인트가 있으며, 클라이언트는 이 엔드포인트를 사용하여 서비스 메서드를 호출합니다. gRPC 라우팅은 이러한 엔드포인트를 관리하고, 클라이언트 요청을 적절한 서비스 메서드로 라우팅합니다.
+- gRPC 라우팅은 서버 측에서 처리되며, 서버는 클라이언트 요청을 받으면 요청을 처리할 적절한 서비스 메서드를 결정합니다. 이를 위해 gRPC 서버는 요청 메시지의 헤더 및 메시지 내용을 분석하고, 적절한 서비스 메서드를 호출합니다.
+
+### gRPC Routing 을 위한 후보 솔루션들
+- Netflix Zuul (Zuul-netflix-webapp)
+- Spring cloud gateway
+- Envoy
+
+### Envoy
+
+- Lyft사에서 개발 후 오픈소스로 공개 (https://github.com/envoyproxy/envoy)
+- 기존 프록시 L4기능 뿐 아니라 L7 기능도 지원하면서 HTTP 뿐아니라 HTTP 2.0,TCP,gRPC까지 다양한 프로토콜을 지원한다.
+- L4기반 프록시보다는 성능이 감소하지만 L7기반임을 고려했을 때는 좋은 성능을 낸다
+  - 성능지표 : https://www.twilio.com/blog/2017/10/http2-issues.html
+
+- 주요 특징
+    - HTTP, TCP, gRPC 프로토콜을 지원
+    - TLS client certification 지원
+    - HTTP L7 라우팅 지원을 통한 URL 기반 라우팅, 버퍼링, 서버간 부하 분산량 조절등
+    - HTTP2 지원
+    - Auto retry, circuit breaker, 부하량 제한등 다양한 로드밸런싱 기능 제공
+    - 다양한 통계 추적 기능 제공 및 Zipkin 통합을 통한 MSA 서비스간의 분산 트렌젝션 성능 측정 제공함으로써 서비스에 대한 다양한 가시성 (visibility)을 제공
+    - Dynamic configuration 지원을 통해서, 중앙 레파지토리에 설정 정보를 동적으로 읽어와서 서버 재시작없이 라우팅 설정 변경이 가능함
+    - MongoDB 및 AWS Dynamo 에 대한 L7 라우팅 기능 제공
+
+- Envoy 설정 구조
+  - Envoy의 설정은 크게 아래 그림과 같이 크게 Listener, Filter, Cluster 세가지 파트로 구성된다. (https://bcho.tistory.com/1295)
+    - Listener : TCP Listener, HTTP Listener
+    - Filter : Listener 로부터 많은 메세지를 중간에 처리하는 부분
+    - 암축처리, Traffic에 대한 작업, Authorization작업, JWT verify, parse 작업, route 타겟 결정
+    - Cluster: Downstream 호스트가 될 서버들의 정보
+
+- Envoy configuration
+- listener
+  - ```yaml
+    admin:
+     address:
+      socket_address:
+        protocol: TCP
+        address: 0.0.0.0
+        port_value: 1901
+    static_resources:
+      listeners:
+        - name: listener_0
+          address:
+            socket_address:
+              protocol: TCP
+              address: 0.0.0.0
+              port_value: 30010
+          filter_chains:
+            - filters:
+              - name: envoy.filters.network.http_connection_manager
+                typed_config:
+                  "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                  stream_idle_timeout: 3600s
+                  request_timeout: 3600s
+                  scheme_header_transformation:
+                    scheme_to_overwrite: https
+                  stat_prefix: ingress_http
+                  route_config:
+                    name: local_route
+                    virtual_hosts:
+                      - name: ot_service
+                        domains: [ "*" ]
+                        routes:
+                          # TEST SERVER
+                          - match:
+                              prefix: "/test"
+                            route:
+                              cluster: test_alb
+                              timeout: 0s
+          
+          ```     
+- cluster
+  - ```yaml
+     clusters:
+    - name: test_alb
+      connect_timeout: 3600s
+      type: LOGICAL_DNS
+      # Comment out the following line to test on v6 networks
+      dns_lookup_family: V4_ONLY
+      lb_policy: ROUND_ROBIN
+      http2_protocol_options: { }
+      load_assignment:
+        cluster_name: test_alb_alb
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: test-internal
+                      port_value: 443
+
+``` 
+    
+      
